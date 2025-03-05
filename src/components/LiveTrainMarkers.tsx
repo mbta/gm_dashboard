@@ -11,6 +11,22 @@ interface LiveTrainMarkersProps {
   map: maplibregl.Map | null;
 }
 
+interface TrainAttributes {
+    latitude: number;
+    longitude: number;
+    label: string;
+    bearing: number;
+}
+
+interface TrainData {
+    id: string;
+    attributes: TrainAttributes
+}
+
+interface TrainAPIResponse {
+    data: TrainData[];
+}
+
 export default function LiveTrainMarkers({ map }: LiveTrainMarkersProps) {
   const trainMarkers = useRef(new Map<string, maplibregl.Marker>());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,7 +50,7 @@ export default function LiveTrainMarkers({ map }: LiveTrainMarkersProps) {
           return; // Skip this cycle and try again later
         }
 
-        const trainData = await response.json();
+        const trainData: TrainAPIResponse = await response.json();
         const dataString = JSON.stringify(trainData.data);
 
         // 🛑 Skip processing if data hasn't changed
@@ -46,13 +62,14 @@ export default function LiveTrainMarkers({ map }: LiveTrainMarkersProps) {
 
         console.log(`✅ Fetch successful at ${new Date().toLocaleTimeString()}`);
 
-        trainData.data.forEach((train: any) => {
+        trainData.data.forEach((train) => {
+          const trainId: string = train.id as string;
           const { latitude, longitude, label, bearing } = train.attributes;
           if (!latitude || !longitude) return;
 
           // ✅ If marker exists, update its position
-          if (trainMarkers.current.has(train.id)) {
-            trainMarkers.current.get(train.id)!.setLngLat([longitude, latitude]);
+          if (trainMarkers.current.has(trainId)) {
+            trainMarkers.current.get(trainId)!.setLngLat([longitude, latitude]);
           } else {
             // 🔹 Define custom marker ONCE before fetching API
             const customMarkerElement = document.createElement('div');
@@ -69,7 +86,7 @@ export default function LiveTrainMarkers({ map }: LiveTrainMarkersProps) {
               .setRotation(bearing)
               .addTo(map);
 
-            trainMarkers.current.set(train.id, marker);
+            trainMarkers.current.set(trainId, marker);
           }
         });
 
