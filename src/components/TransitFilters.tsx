@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface TransitFiltersProps {
   activeFilters: { [key: string]: boolean };
@@ -33,17 +34,19 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
   };
 
   // Handles hover leave with 50ms delay
-  const handleMouseLeave = (category: string) => {
+  const handleMouseLeave = () => {
     setIsInsideExpanded(false);
     const id = setTimeout(() => {
-      setHovered(null);
+        if (!isInsideExpanded) {
+            setHovered(null);
+        }
     }, 50);
     setTimeoutId(id);
   };
 
   // Ensures proper resizing back to normal when moving away
   useEffect(() => {
-    if (!hovered) {
+    if (!hovered && !isInsideExpanded) {
       setTimeout(() => {
         setHovered(null);
       }, 50);
@@ -59,16 +62,16 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           hovered && hovered !== "subway" ? "opacity-50" : "opacity-100"
         }`}
         onMouseEnter={() => handleMouseEnter("subway")}
-        onMouseLeave={() => handleMouseLeave("subway")}
+        onMouseLeave={() => handleMouseLeave()}
       >
         {hovered === "subway" && (
           <div
             className="absolute right-14 flex gap-2 p-2 bg-gray-800 rounded-lg shadow-lg transition-all duration-300"
             onMouseEnter={() => handleMouseEnter("subway")}
-            onMouseLeave={() => handleMouseLeave("subway")}
+            onMouseLeave={() => handleMouseLeave()}
           >
             {SUBWAY_LINES.map((line) => (
-              <img
+              <Image
                 key={line}
                 src={`/icons/icon-${line.toLowerCase()}-line-default.svg`}
                 alt={`${line} line icon`}
@@ -76,6 +79,8 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                   !activeFilters[line] ? "opacity-50" : "opacity-100"
                 }`}
                 onClick={() => toggleLine(line)}
+                width={40}
+                height={40}
               />
             ))}
           </div>
@@ -86,10 +91,12 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
               } ${isCategoryOff(SUBWAY_LINES) ? "opacity-50" : "opacity-100"}`}
             onClick={() => toggleCategory("subway")}
             >
-            <img 
+            <Image 
                 src="/icons/icon-mode-subway-small.svg" 
                 alt="subway-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
+                width={40}
+                height={40}
             />
         </Button>
 
@@ -101,13 +108,13 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           hovered && hovered !== "lightrail" ? "opacity-50" : "opacity-100"
         }`}
         onMouseEnter={() => handleMouseEnter("lightrail")}
-        onMouseLeave={() => handleMouseLeave("lightrail")}
+        onMouseLeave={() => handleMouseLeave()}
       >
         {hovered === "lightrail" && (
             <div
                 className="absolute right-14 flex gap-2 p-2 bg-gray-800 rounded-lg shadow-lg transition-all duration-300"
                 onMouseEnter={() => handleMouseEnter("lightrail")}
-                onMouseLeave={() => handleMouseLeave("lightrail")}
+                onMouseLeave={() => handleMouseLeave()}
             >
                 {LIGHTRAIL_LINES.map((line) => {
                 let srcPath = "";
@@ -123,7 +130,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                 }
 
                 return (
-                    <img
+                    <Image
                     key={line}
                     src={srcPath}
                     alt={`${line} line icon`}
@@ -131,6 +138,8 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                         !activeFilters[line] ? "opacity-50" : "opacity-100"
                     }`}
                     onClick={() => toggleLine(line)}
+                    width={40}
+                    height={40}
                     />
                 );
                 })}
@@ -144,10 +153,12 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           } ${isCategoryOff(LIGHTRAIL_LINES) ? "opacity-50" : "opacity-100"}`}
           onClick={() => toggleCategory("lightrail")}
         >
-          <img 
+          <Image
                 src="/icons/icon-mode-trolley-small.svg" 
                 alt="trolley-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
+                width={40}
+                height={40}
             />
         </Button>
       </div>
@@ -158,7 +169,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           hovered && hovered !== "commuter" ? "opacity-50" : "opacity-100"
         }`}
         onMouseEnter={() => handleMouseEnter("commuter")}
-        onMouseLeave={() => handleMouseLeave("commuter")}
+        onMouseLeave={() => handleMouseLeave()}
       >
         {/* {hovered === "commuter" && (
           <span
@@ -176,10 +187,12 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           } ${isCategoryOff(COMMUTER_LINES) ? "opacity-50" : "opacity-100"}`}
           onClick={() => toggleCategory("commuter")}
         >
-          <img 
+          <Image
                 src="/icons/icon-mode-commuter-rail-small.svg" 
                 alt="commuter-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
+                width={40}
+                height={40}
             />
         </Button>
       </div>
@@ -190,7 +203,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
             hovered && hovered !== "showAll" ? "opacity-50" : "opacity-100"
           }`}
         onMouseEnter={() => handleMouseEnter("showAll")}
-        onMouseLeave={() => handleMouseLeave("showAll")}
+        onMouseLeave={() => handleMouseLeave()}
       >
         {hovered === "showAll" && (
           <span className="absolute right-14 whitespace-nowrap bg-black text-white py-1 px-2 rounded-md transition-all duration-300">
