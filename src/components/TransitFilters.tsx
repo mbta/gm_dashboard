@@ -37,7 +37,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
   const handleMouseLeave = () => {
     setIsInsideExpanded(false);
     const id = setTimeout(() => {
-        if (!isInsideExpanded) {
+        if (isInsideExpanded) {
             setHovered(null);
         }
     }, 50);
@@ -92,7 +92,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
             onClick={() => toggleCategory("subway")}
             >
             <Image 
-                src="/icons/icon-mode-subway-small.svg" 
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icons/icon-mode-subway-small.svg`} 
                 alt="subway-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}
@@ -122,7 +122,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                 // Handle Green Line segments (Green-B, Green-C, etc.)
                 if (line.includes("Green")) {
                     const shortLine = line.split("-")[1]; // Extract "B", "C", "D", "E"
-                    srcPath = `/icons/icon-green-line-${shortLine.toLowerCase()}-default.svg`;
+                    srcPath = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icons/icon-green-line-${shortLine.toLowerCase()}-default.svg`;
                 } 
                 // Handle Mattapan separately (without 'green-line')
                 else if (line === "Mattapan") {
@@ -154,7 +154,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           onClick={() => toggleCategory("lightrail")}
         >
           <Image
-                src="/icons/icon-mode-trolley-small.svg" 
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icons/icon-mode-trolley-small.svg`} 
                 alt="trolley-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}
@@ -188,7 +188,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           onClick={() => toggleCategory("commuter")}
         >
           <Image
-                src="/icons/icon-mode-commuter-rail-small.svg" 
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icons/icon-mode-commuter-rail-small.svg`} 
                 alt="commuter-icon" 
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}

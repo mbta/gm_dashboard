@@ -2,8 +2,8 @@
 import { useEffect, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 const MBTA_API_BASE_URL = 'https://api-v3.mbta.com';
-const MAX_RETRIES = 5;
-const INITIAL_RETRY_DELAY = 3000;
+const MAX_RETRIES = 20;
+const INITIAL_RETRY_DELAY = 500;
 const MBTA_SUBWAY_LINES = ['Red', 'Orange', 'Blue'];
 const MBTA_LIGHTRAIL_LINES = ['Mattapan', 'Green-B', 'Green-C', 'Green-D', 'Green-E'];
 const MBTA_COMMUTER_RAIL_LINES = [
@@ -74,7 +74,7 @@ export default function TrainPaths({ map, activeFilters, onRoutesLoaded }: Train
           type: 'line',
           source: sourceId,
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': ['get', 'route_color'], 'line-width': 4 },
+          paint: { 'line-color': ['get', 'route_color'], 'line-width': 2 },
         });
       }
       console.log(`✅ Successfully loaded route: ${line}`);

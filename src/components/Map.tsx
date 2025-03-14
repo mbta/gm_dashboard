@@ -41,7 +41,7 @@ const Map = () => {
       container: mapContainer.current,
       style: "https://api.maptiler.com/maps/6352c4b7-9417-48fc-b37e-a8e9154e1559/style.json?key=uAsV5el3HdBMKRqcz1p8",
       center: DEFAULT_CENTER,
-      zoom: 12,
+      zoom: 11,
     });
 
     mapInstance.current.on("load", () => setMapReady(true));
@@ -90,7 +90,7 @@ const Map = () => {
         })}
       />
 
-      <ResetButton mapInstance={mapInstance} />
+      <ResetButton mapInstance={mapInstance.current} />
     </div>
   );
 };

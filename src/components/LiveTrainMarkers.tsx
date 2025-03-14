@@ -75,8 +75,8 @@ export default function LiveTrainMarkers({ map }: LiveTrainMarkersProps) {
             const customMarkerElement = document.createElement('div');
             customMarkerElement.style.backgroundImage = `url(${MBTA_TRAIN_ICON_URL})`;
             customMarkerElement.style.backgroundSize = 'contain';
-            customMarkerElement.style.width = '32px';
-            customMarkerElement.style.height = '32px';
+            customMarkerElement.style.width = '16px';
+            customMarkerElement.style.height = '16px';
             customMarkerElement.style.cursor = 'pointer';
 
             // ✅ Add custom marker to map

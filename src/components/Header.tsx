@@ -6,7 +6,7 @@ export default function Header() {
       {/* MBTA Logo with Inverted Colors */}
       <div className="mr-4">
         <Image
-          src={`/icons/icon-circle-t-default.svg`}
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icons/icon-circle-t-default.svg`}
           alt="MBTA Logo"
           className="w-10 h-10 invert" // Apply the CSS class
           width={10}
