@@ -39,7 +39,7 @@ export default function ZoomControls({ map }: ZoomControlsProps) {
 
   return (
     <div
-      className="absolute top-70 right-4 z-10 flex flex-col items-center gap-2 p-3 bg-black text-white rounded-lg shadow-md"
+      className="absolute top-72 right-4 z-20 flex flex-col items-center gap-2 p-3 bg-black text-white rounded-lg shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -48,12 +48,12 @@ export default function ZoomControls({ map }: ZoomControlsProps) {
           Zoom: {zoomLevel.toFixed(1)}
         </div>
       )}
-      
+
       {/* Zoom In Button */}
       <Button variant="ghost" size="icon" onClick={handleZoomIn} className="text-white hover:bg-gray-700">
         <Plus className="w-10 h-10" />
       </Button>
-
+      
       <div className="w-full h-[1px] bg-gray-500" />
 
       {/* Zoom Out Button */}
