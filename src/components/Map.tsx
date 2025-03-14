@@ -97,7 +97,7 @@ const Map = () => {
       />
 
       <ResetButton mapInstance={mapInstance.current} />
-      {/* <ZoomControls map={mapInstance.current} /> */}
+      <ZoomControls map={mapInstance.current} />
     </div>
   );
 };
