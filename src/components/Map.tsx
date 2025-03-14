@@ -7,8 +7,13 @@ import ResetButton from "./ResetButton";
 import TrainPaths from "./TrainPaths";
 import TransitFilters from "./TransitFilters";
 import LiveTrainMarkers from "./LiveTrainMarkers";
+import ZoomControls from "./ZoomControls";
 
 const DEFAULT_CENTER: [number, number] = [-71.0589, 42.3601];
+const MASSACHUSETTS_BOUNDS: [[number, number], [number, number]] = [
+    [-73.5081, 41.237964], // Southwest corner (Lower Left)
+    [-69.9285, 42.8868],   // Northeast corner (Upper Right)
+  ];
 
 const MBTA_LINES = {
   subway: ["Red", "Orange", "Blue"],
@@ -44,6 +49,7 @@ const Map = () => {
       zoom: 11,
     });
 
+    mapInstance.current.setMaxBounds(MASSACHUSETTS_BOUNDS);
     mapInstance.current.on("load", () => setMapReady(true));
 
   }, []);
@@ -76,7 +82,7 @@ const Map = () => {
         <>
           <TrainPaths map={mapInstance.current} activeFilters={activeFilters} onRoutesLoaded={() => setIsRoutesLoaded(true)}/>
           {/* <VehicleMarkers map={mapInstance.current} /> ✅ Overlay Vehicle Tracking */}
-          { isRoutesLoaded && < LiveTrainMarkers map={mapInstance.current}/> }
+          { isRoutesLoaded && < LiveTrainMarkers map={mapInstance.current} activeFilters={activeFilters}/> }
         </>
       )}
       <TransitFilters 
@@ -91,6 +97,7 @@ const Map = () => {
       />
 
       <ResetButton mapInstance={mapInstance.current} />
+      {/* <ZoomControls map={mapInstance.current} /> */}
     </div>
   );
 };
