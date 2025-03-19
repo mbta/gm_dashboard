@@ -4,18 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && echo > out/.nojekyll",
-    "start": "next start",
+    "build": "next build",
+    "start": "serve out",
     "export": "next export",
-    "lint": "next lint",
-    "predeploy": "touch out/.nojekyll",
-    "deploy": "gh-pages -d out"
-  },
-  "gh-pages": {
-    "src": [
-      "out/**/*",
-      "out/.nojekyll"
-    ]
+    "lint": "next lint"
   },
   "dependencies": {
     "@mapbox/polyline": "^1.2.1",
@@ -41,6 +33,7 @@
     "eslint-config-next": "15.1.7",
     "gh-pages": "^6.3.0",
     "postcss": "^8",
+    "serve": "^14.2.4",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

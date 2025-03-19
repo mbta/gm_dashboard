@@ -3,12 +3,50 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import subwayIcon from "../icons/icon-mode-subway-small.svg";
+import trolleyIcon from "../icons/icon-mode-trolley-small.svg";
+import commuterRailIcon from "../icons/icon-mode-commuter-rail-small.svg";
+import greenBIcon from "../icons/icon-green-line-b-default.svg";
+import greenCIcon from "../icons/icon-green-line-c-default.svg";
+import greenDIcon from "../icons/icon-green-line-d-default.svg";
+import greenEIcon from "../icons/icon-green-line-e-default.svg";
+import mattapanIcon from "../icons/icon-mattapan-line-default.svg";
+import redLineIcon from "../icons/icon-red-line-default.svg";
+import orangeLineIcon from "../icons/icon-orange-line-default.svg";
+import blueLineIcon from "../icons/icon-blue-line-default.svg";
 
 interface TransitFiltersProps {
   activeFilters: { [key: string]: boolean };
   toggleCategory: (category: 'subway' | 'lightrail' | 'commuter') => void;
   toggleLine: (line: string) => void;
   showAll: () => void;
+}
+
+function lineToIcon(line: string) {
+  if (line === "Green-B") {
+    return greenBIcon;
+  }
+  if (line === "Green-C") {
+    return greenCIcon;
+  }
+  if (line === "Green-D") {
+    return greenDIcon;
+  }
+  if (line === "Green-E") {
+    return greenEIcon;
+  }
+  if (line === "Mattapan") {
+    return mattapanIcon;
+  }
+  if (line === "Red") {
+    return redLineIcon;
+  }
+  if (line === "Orange") {
+    return orangeLineIcon;
+  }
+  if (line === "Blue") {
+    return blueLineIcon;
+  }
 }
 
 export default function TransitFilters({ activeFilters, toggleCategory, toggleLine, showAll }: TransitFiltersProps) {
@@ -73,7 +111,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
             {SUBWAY_LINES.map((line) => (
               <Image
                 key={line}
-                src={`icons/icon-${line.toLowerCase()}-line-default.svg`}
+                src={lineToIcon(line)}
                 alt={`${line} line icon`}
                 className={`h-8 w-8 flex transition-all duration-300 cursor-pointer max-w-[40px] max-h-[40px] object-contain ${
                   !activeFilters[line] ? "opacity-50" : "opacity-100"
@@ -92,8 +130,8 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
             onClick={() => toggleCategory("subway")}
             >
             <Image 
-                src={`icons/icon-mode-subway-small.svg`} 
-                alt="subway-icon" 
+                src={subwayIcon}
+                alt="Subway"
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}
                 height={40}
@@ -117,22 +155,11 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                 onMouseLeave={() => handleMouseLeave()}
             >
                 {LIGHTRAIL_LINES.map((line) => {
-                let srcPath = "";
-
-                // Handle Green Line segments (Green-B, Green-C, etc.)
-                if (line.includes("Green")) {
-                    const shortLine = line.split("-")[1]; // Extract "B", "C", "D", "E"
-                    srcPath = `icons/icon-green-line-${shortLine.toLowerCase()}-default.svg`;
-                } 
-                // Handle Mattapan separately (without 'green-line')
-                else if (line === "Mattapan") {
-                    srcPath = `icons/icon-mattapan-line-default.svg`;
-                }
 
                 return (
                     <Image
                     key={line}
-                    src={srcPath}
+                    src={lineToIcon(line)}
                     alt={`${line} line icon`}
                     className={`h-8 w-8 flex transition-all duration-300 cursor-pointer max-w-[40px] max-h-[40px] object-contain ${
                         !activeFilters[line] ? "opacity-50" : "opacity-100"
@@ -154,8 +181,8 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           onClick={() => toggleCategory("lightrail")}
         >
           <Image
-                src={`icons/icon-mode-trolley-small.svg`} 
-                alt="trolley-icon" 
+                src={trolleyIcon}
+                alt="Light Rail"
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}
                 height={40}
@@ -188,8 +215,8 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
           onClick={() => toggleCategory("commuter")}
         >
           <Image
-                src={`icons/icon-mode-commuter-rail-small.svg`} 
-                alt="commuter-icon" 
+                src={commuterRailIcon}
+                alt="Commuter Rail"
                 className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
                 width={40}
                 height={40}

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import iconCircle from "../icons/icon-circle-t-default.svg";
 
 export default function Header() {
   return (
@@ -6,7 +7,7 @@ export default function Header() {
       {/* MBTA Logo with Inverted Colors */}
       <div className="mr-4">
         <Image
-          src={`icons/icon-circle-t-default.svg`}
+          src={iconCircle}
           alt="MBTA Logo"
           className="w-10 h-10 invert" // Apply the CSS class
           width={10}
