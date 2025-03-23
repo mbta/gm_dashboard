@@ -47,8 +47,6 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
       }
     >()
   );
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const [rateLimitReset, setRateLimitReset] = useState<number | null>(null);
 
   const updateTrainMarker = (train: TrainData) => {
     const trainId = train.id;
@@ -141,17 +139,6 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
             `${MBTA_API_BASE_URL}/vehicles?filter[route_type]=0,1,2`
           );
 
-          if (response.status === 429) {
-            console.warn("⚠️ Rate limit hit (429)");
-            const resetTime = response.headers.get("X-RateLimit-Reset");
-            if (resetTime) {
-              setRateLimitReset(parseInt(resetTime, 10));
-              // Wait until rate limit reset before trying again
-              await new Promise(resolve => setTimeout(resolve, (parseInt(resetTime, 10) * 1000) - Date.now()));
-            }
-            continue;
-          }
-
           const initialData: TrainAPIResponse = await response.json();
           initialData.data.forEach(updateTrainMarker);
 
@@ -240,7 +227,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         tooltip.remove();
       });
     };
-  }, [map, rateLimitReset]);
+  }, [map]);
 
   useEffect(() => {
     if (!map) return;
