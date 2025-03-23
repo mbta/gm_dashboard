@@ -75,9 +75,6 @@ interface ApiResponse {
 }
 
 export default function TrainPaths({ map, activeFilters, onRoutesLoaded }: TrainPathsProps) {
-  const [routeDataCache, setRouteDataCache] = useState<
-    Map<string, GeoJSON.FeatureCollection<GeoJSON.LineString>>
-  >(new Map());
   const [routesLoaded, setRoutesLoaded] = useState(false);
   const [routeIds, setRouteIds] = useState<string[]>([]);
 
@@ -152,9 +149,6 @@ export default function TrainPaths({ map, activeFilters, onRoutesLoaded }: Train
             type: 'FeatureCollection',
             features
           };
-
-          // Cache and add to map
-          setRouteDataCache(prev => new Map(prev.set(routeId, geoJson)));
 
           const sourceId = `mbta-routes-${routeId}`;
           const layerId = `mbta-lines-${routeId}`;
