@@ -21,7 +21,7 @@ const MBTA_LINES = {
   commuter: [
     "CR-Fairmount", "CR-Fitchburg", "CR-Worcester", "CR-Franklin", "CR-Greenbush",
     "CR-Haverhill", "CR-Kingston", "CR-Lowell", "CR-Middleborough", "CR-Needham",
-    "CR-Newburyport", "CR-Providence", "CR-Foxboro"
+    "CR-Newburyport", "CR-Providence", "CR-Foxboro", "CR-NewBedford"
   ]
 };
 
