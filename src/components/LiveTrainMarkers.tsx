@@ -112,8 +112,8 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
       map!.getCanvas().parentElement?.appendChild(tooltip);
 
       marker.getElement().addEventListener("mousemove", (event) => {
-        tooltip.style.left = `${event.clientX + 10}px`;
-        tooltip.style.top = `${event.clientY - 30}px`;
+        tooltip.style.left = `${event.clientX - 60}px`;
+        tooltip.style.top = `${event.clientY - 200}px`;
       });
 
       trainMarkers.current.set(trainId, { 
