@@ -37,10 +37,6 @@ interface TrainData {
   };
 }
 
-interface TrainAPIResponse {
-  data: TrainData[];
-}
-
 interface Stop {
   id: string;
   attributes: {
@@ -92,12 +88,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
   const fetchStops = async () => {
     try {
       const response = await fetch(
-        `${MBTA_API_BASE_URL}/stops`,
-        {
-          headers: {
-            'x-api-key': MBTA_API_KEY
-          }
-        }
+        `${MBTA_API_BASE_URL}/stops`
       );
       const data = await response.json();
       data.data.forEach((stop: Stop) => {
@@ -201,107 +192,80 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
 
     console.log("✅ Setting up SSE connection for live train data");
     let isActive = true;
+    let eventSource: EventSource | null = null;
 
     const setupSSE = async () => {
-      // Pre-fetch stops data before setting up the stream
-      await fetchStops();
-      
-      while (isActive) {
         try {
-          // First fetch initial state
-          const response = await fetch(
-            `${MBTA_API_BASE_URL}/vehicles?filter[route_type]=0,1,2`
-          );
+            // First fetch stops data
+            await fetchStops();
 
-          const initialData: TrainAPIResponse = await response.json();
-          initialData.data.forEach(updateTrainMarker);
+            // Then set up streaming connection
+            console.log('Connecting to MBTA streaming API...');
+            eventSource = new EventSource(
+                `${MBTA_API_BASE_URL}/vehicles?filter[route_type]=0,1,2&api_key=${MBTA_API_KEY}`
+            );
 
-          // Then set up streaming connection
-          console.log('Connecting to MBTA streaming API...');
-          const streamResponse = await fetch(
-            `${MBTA_API_BASE_URL}/vehicles?filter[route_type]=0,1,2`,
-            {
-              headers: {
-                'Accept': 'text/event-stream',
-                'x-api-key': MBTA_API_KEY
-              }
-            }
-          );
+            // Handle connection open
+            eventSource.onopen = () => {
+                console.log('Stream connection established, monitoring updates...');
+            };
 
-          if (!streamResponse.ok) {
-            throw new Error(`HTTP error! status: ${streamResponse.status}`);
-          }
-
-          const reader = streamResponse.body!.getReader();
-          const decoder = new TextDecoder();
-
-          let buffer = '';
-          console.log('Stream connection established, monitoring updates...');
-
-          try {
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) {
-                console.log('Stream ended, attempting to reconnect...');
-                break;
-              }
-
-              // Process stream data...
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              let currentEvent = '';
-              for (const line of lines) {
-                if (line.trim()) {
-                  if (line.startsWith('event:')) {
-                    currentEvent = line.slice(6).trim();
-                    continue;
-                  }
-                  if (line.startsWith('data:')) {
-                    try {
-                      const jsonStr = line.slice(5).trim();
-                      const jsonData = JSON.parse(jsonStr);
-                      if (currentEvent === 'reset') {
-                        trainMarkers.current.clear();
-                        if (Array.isArray(jsonData)) {
-                          jsonData.forEach(updateTrainMarker);
-                        }
-                      } else if (currentEvent === 'update' && jsonData.id) {
-                        updateTrainMarker(jsonData);
-                      }
-                    } catch (e) {
-                      console.error('Error parsing JSON:', e);
+            // Handle events
+            eventSource.addEventListener('reset', (event: MessageEvent) => {
+                try {
+                    const jsonData: TrainData[] = JSON.parse(event.data);
+                    trainMarkers.current.clear();
+                    if (Array.isArray(jsonData)) {
+                        jsonData.forEach(updateTrainMarker);
                     }
-                  }
+                } catch (e) {
+                    console.error('Error parsing reset data:', e);
                 }
-              }
-            }
-          } finally {
-            reader.releaseLock();
-          }
+            });
 
-          // Wait a bit before reconnecting
-          await new Promise(resolve => setTimeout(resolve, 1000));
+            eventSource.addEventListener('update', (event: MessageEvent) => {
+                try {
+                    const jsonData: TrainData = JSON.parse(event.data);
+                    if (jsonData.id) {
+                        updateTrainMarker(jsonData);
+                    }
+                } catch (e) {
+                    console.error('Error parsing update data:', e);
+                }
+            });
+
+            // Handle errors
+            eventSource.onerror = (error) => {
+                console.error("❌ EventSource failed:", error);
+                eventSource?.close();
+                
+                if (isActive) {
+                    console.log('Attempting to reconnect in 5 seconds...');
+                    setTimeout(setupSSE, 5000);
+                }
+            };
 
         } catch (err) {
-          console.error("❌ Error in train tracking:", err);
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 5000));
+            console.error("❌ Error in train tracking:", err);
+            if (isActive) {
+                setTimeout(setupSSE, 5000);
+            }
         }
-      }
     };
 
     setupSSE();
 
     return () => {
-      console.log("🛑 Cleanup: Closing SSE connection");
-      isActive = false;
-      trainMarkers.current.forEach(({ tooltip }) => {
-        tooltip.remove();
-      });
+        console.log("🛑 Cleanup: Closing SSE connection");
+        isActive = false;
+        if (eventSource) {
+            eventSource.close();
+        }
+        trainMarkers.current.forEach(({ tooltip }) => {
+            tooltip.remove();
+        });
     };
-  }, [map]);
+}, [map]);
 
   useEffect(() => {
     if (!map) return;
