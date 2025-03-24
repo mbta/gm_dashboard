@@ -44,6 +44,9 @@ interface Stop {
   };
 }
 
+// Add this outside the component to persist across reconnections
+const globalStopCache = new Map<string, string>();
+
 function getDirectionName(routeLine: string, directionId?: number): string {
   if (directionId === undefined) return 'Unknown';
   const direction = Number(directionId);
@@ -72,7 +75,22 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     >()
   );
 
-  const stopNameCache = useRef(new Map<string, string>());
+  const fetchStops = async () => {
+    // Only fetch if global cache is empty
+    if (globalStopCache.size === 0) {
+      try {
+        const response = await fetch(
+          `${MBTA_API_BASE_URL}/stops`
+        );
+        const data = await response.json();
+        data.data.forEach((stop: Stop) => {
+          globalStopCache.set(stop.id, stop.attributes.name);
+        });
+      } catch (error) {
+        console.error('Error fetching stops:', error);
+      }
+    }
+  };
 
   function getDestination(train: TrainData): string {
     if (train.attributes.destination) {
@@ -80,23 +98,17 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     }
     if (train.relationships?.stop?.data?.id) {
       const stopId = train.relationships.stop.data.id;
-      return stopNameCache.current.get(stopId) || stopId;
+      return globalStopCache.get(stopId) || stopId;
     }
     return 'Unknown';
   }
 
-  const fetchStops = async () => {
-    try {
-      const response = await fetch(
-        `${MBTA_API_BASE_URL}/stops`
-      );
-      const data = await response.json();
-      data.data.forEach((stop: Stop) => {
-        stopNameCache.current.set(stop.id, stop.attributes.name);
-      });
-    } catch (error) {
-      console.error('Error fetching stops:', error);
-    }
+  const clearAllMarkers = () => {
+    trainMarkers.current.forEach(({ marker, tooltip }) => {
+      marker.remove();
+      tooltip.remove();
+    });
+    trainMarkers.current.clear();
   };
 
   const updateTrainMarker = (train: TrainData) => {
@@ -196,8 +208,11 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
 
     const setupSSE = async () => {
         try {
-            // First fetch stops data
+            // First fetch stops data (will only fetch if cache is empty)
             await fetchStops();
+
+            // Clear any existing markers before new connection
+            clearAllMarkers();
 
             // Then set up streaming connection
             console.log('Connecting to MBTA streaming API...');
@@ -261,9 +276,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         if (eventSource) {
             eventSource.close();
         }
-        trainMarkers.current.forEach(({ tooltip }) => {
-            tooltip.remove();
-        });
+        clearAllMarkers();
     };
 }, [map]);
 
