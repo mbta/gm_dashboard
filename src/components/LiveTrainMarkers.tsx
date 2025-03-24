@@ -41,6 +41,13 @@ interface TrainAPIResponse {
   data: TrainData[];
 }
 
+interface Stop {
+  id: string;
+  attributes: {
+    name: string;
+  };
+}
+
 function getDirectionName(routeLine: string, directionId?: number): string {
   if (directionId === undefined) return 'Unknown';
   const direction = Number(directionId);
@@ -93,7 +100,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         }
       );
       const data = await response.json();
-      data.data.forEach((stop: any) => {
+      data.data.forEach((stop: Stop) => {
         stopNameCache.current.set(stop.id, stop.attributes.name);
       });
     } catch (error) {
