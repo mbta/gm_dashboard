@@ -17,9 +17,11 @@ interface TrainAttributes {
   longitude: number;
   label: string;
   bearing: number;
-  // occupancy_status?: string;
-  carriages?: { label: string }[]; 
+  carriages?: { label: string }[];
   updated_at: string;
+  direction_id?: number;
+  destination?: string;
+  current_status?: string;
 }
 
 interface TrainData {
@@ -27,12 +29,31 @@ interface TrainData {
   attributes: TrainAttributes;
   relationships: {
     route: { data: { id: string } };
-    // stop?: { data?: { id: string } };
+    stop?: { 
+      data?: { 
+        id: string 
+      } 
+    };
   };
 }
 
 interface TrainAPIResponse {
   data: TrainData[];
+}
+
+function getDirectionName(routeLine: string, directionId?: number): string {
+  if (directionId === undefined) return 'Unknown';
+  const direction = Number(directionId);
+  if (routeLine === 'Red' || routeLine === 'Orange') {
+    return direction === 0 ? 'Southbound' : 'Northbound';
+  }
+  if (routeLine === 'Blue' || routeLine.startsWith('Green')) {
+    return direction === 0 ? 'Westbound' : 'Eastbound';
+  }
+  if (routeLine === 'Mattapan' || routeLine.startsWith('CR-')) {
+    return direction === 0 ? 'Outbound' : 'Inbound';
+  }
+  return direction === 0 ? 'Outbound' : 'Inbound';
 }
 
 export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarkersProps) {
@@ -48,23 +69,66 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     >()
   );
 
+  const stopNameCache = useRef(new Map<string, string>());
+
+  function getDestination(train: TrainData): string {
+    if (train.attributes.destination) {
+      return train.attributes.destination;
+    }
+    if (train.relationships?.stop?.data?.id) {
+      const stopId = train.relationships.stop.data.id;
+      return stopNameCache.current.get(stopId) || stopId;
+    }
+    return 'Unknown';
+  }
+
+  const fetchStops = async () => {
+    try {
+      const response = await fetch(
+        `${MBTA_API_BASE_URL}/stops`,
+        {
+          headers: {
+            'x-api-key': MBTA_API_KEY
+          }
+        }
+      );
+      const data = await response.json();
+      data.data.forEach((stop: any) => {
+        stopNameCache.current.set(stop.id, stop.attributes.name);
+      });
+    } catch (error) {
+      console.error('Error fetching stops:', error);
+    }
+  };
+
   const updateTrainMarker = (train: TrainData) => {
     const trainId = train.id;
     const routeId = train.relationships.route.data.id;
-    const { latitude, longitude, label, bearing, carriages, updated_at } = train.attributes;
+    const { 
+      latitude, longitude, label, bearing, carriages, updated_at,
+      direction_id, current_status
+    } = train.attributes;
 
     if (!latitude || !longitude) return;
 
     const lastPingAge = Math.round((Date.now() - new Date(updated_at).getTime()) / 1000);
     const carCount = carriages ? carriages.length : "N/A";
     const consist = carriages ? carriages.map(c => c.label).join(", ") : "No data";
+    const direction = getDirectionName(routeId, direction_id);
+    const destination = getDestination(train);
 
     const trainDetails = routeId.includes("CR-") 
       ? `Car: ${label}
          Route: ${routeId}
+         Direction: ${direction}
+         Destination: ${destination}
+         Status: ${current_status || 'Unknown'}
          Last Ping: ${lastPingAge}s ago`
       : `Lead Car: ${label}
          Route: ${routeId}
+         Direction: ${direction}
+         Destination: ${destination}
+         Status: ${current_status || 'Unknown'}
          Cars: ${carCount}
          Consist: ${consist}
          Last Ping: ${lastPingAge}s ago`;
@@ -113,7 +177,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
 
       marker.getElement().addEventListener("mousemove", (event) => {
         tooltip.style.left = `${event.clientX - 60}px`;
-        tooltip.style.top = `${event.clientY - 200}px`;
+        tooltip.style.top = `${event.clientY - 260}px`;
       });
 
       trainMarkers.current.set(trainId, { 
@@ -129,10 +193,13 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     if (!map) return;
 
     console.log("✅ Setting up SSE connection for live train data");
-    let isActive = true;  // Track if component is still mounted
+    let isActive = true;
 
     const setupSSE = async () => {
-      while (isActive) {  // Keep trying to connect while component is mounted
+      // Pre-fetch stops data before setting up the stream
+      await fetchStops();
+      
+      while (isActive) {
         try {
           // First fetch initial state
           const response = await fetch(
@@ -143,7 +210,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
           initialData.data.forEach(updateTrainMarker);
 
           // Then set up streaming connection
-          console.log('\nConnecting to MBTA streaming API...');
+          console.log('Connecting to MBTA streaming API...');
           const streamResponse = await fetch(
             `${MBTA_API_BASE_URL}/vehicles?filter[route_type]=0,1,2`,
             {
@@ -169,7 +236,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
               const { value, done } = await reader.read();
               if (done) {
                 console.log('Stream ended, attempting to reconnect...');
-                break;  // Break inner loop to attempt reconnection
+                break;
               }
 
               // Process stream data...
@@ -207,12 +274,12 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
             reader.releaseLock();
           }
 
-          // Wait a bit before reconnecting to avoid rapid reconnection attempts
+          // Wait a bit before reconnecting
           await new Promise(resolve => setTimeout(resolve, 1000));
 
         } catch (err) {
           console.error("❌ Error in train tracking:", err);
-          // Wait before retry on error
+          // Wait before retry
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
@@ -222,7 +289,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
 
     return () => {
       console.log("🛑 Cleanup: Closing SSE connection");
-      isActive = false;  // Stop reconnection attempts
+      isActive = false;
       trainMarkers.current.forEach(({ tooltip }) => {
         tooltip.remove();
       });
