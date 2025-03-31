@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import maplibregl from "maplibre-gl";
@@ -12,12 +12,13 @@ interface ZoomControlsProps {
 export default function ZoomControls({ map }: ZoomControlsProps) {
   const [zoomLevel, setZoomLevel] = useState(11);
   const [isHovered, setIsHovered] = useState(false);
+  const initialZoomRef = useRef(11); // Store initial zoom in a ref
 
   useEffect(() => {
     if (!map) return;
 
-    // Set initial zoom only once when map is first available
-    const initialZoom = map.getZoom() || zoomLevel;
+    // Use ref for initial zoom instead of state
+    const initialZoom = map.getZoom() || initialZoomRef.current;
     map.setZoom(initialZoom);
     setZoomLevel(initialZoom);
 
@@ -29,7 +30,7 @@ export default function ZoomControls({ map }: ZoomControlsProps) {
     return () => {
       map.off("zoom", updateZoom);
     };
-  }, [map]); // Remove zoomLevel dependency
+  }, [map]); // Clean dependency array
 
   const handleZoomIn = () => {
     if (map) {
