@@ -10,14 +10,16 @@ interface ZoomControlsProps {
 }
 
 export default function ZoomControls({ map }: ZoomControlsProps) {
-  const [zoomLevel, setZoomLevel] = useState(11); // Default Zoom Level
+  const [zoomLevel, setZoomLevel] = useState(11);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (!map) return;
 
-    // Set initial zoom
-    map.setZoom(zoomLevel);
+    // Set initial zoom only once when map is first available
+    const initialZoom = map.getZoom() || zoomLevel;
+    map.setZoom(initialZoom);
+    setZoomLevel(initialZoom);
 
     const updateZoom = () => setZoomLevel(map.getZoom());
 
@@ -27,14 +29,18 @@ export default function ZoomControls({ map }: ZoomControlsProps) {
     return () => {
       map.off("zoom", updateZoom);
     };
-  }, [map]);
+  }, [map]); // Remove zoomLevel dependency
 
   const handleZoomIn = () => {
-    if (map) map.zoomIn();
+    if (map) {
+      map.zoomTo(map.getZoom() + 0.5); // Increase zoom increment
+    }
   };
 
   const handleZoomOut = () => {
-    if (map) map.zoomOut();
+    if (map) {
+      map.zoomTo(map.getZoom() - 0.5); // Increase zoom decrement
+    }
   };
 
   return (
