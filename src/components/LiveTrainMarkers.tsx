@@ -114,6 +114,10 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
   const updateTrainMarker = (train: TrainData) => {
     const trainId = train.id;
     const routeId = train.relationships.route.data.id;
+    
+    // Check if this route should be visible based on active filters
+    const isRouteVisible = activeFilters[routeId] ?? true;
+    
     const { 
       latitude, longitude, label, bearing, carriages, updated_at,
       direction_id, current_status
@@ -148,6 +152,9 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
       const existingMarker = trainMarkers.current.get(trainId)!;
       existingMarker.marker.setLngLat([longitude, latitude]).setRotation(bearing);
       existingMarker.tooltip.innerText = trainDetails;
+      // Update visibility based on active filters
+      existingMarker.marker.getElement().style.display = isRouteVisible ? "block" : "none";
+      existingMarker.visible = isRouteVisible;
     } else {
       // Create new marker
       const customMarkerElement = document.createElement("div");
@@ -183,6 +190,9 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         .setRotation(bearing)
         .addTo(map!);
 
+      // Set initial visibility based on active filters
+      marker.getElement().style.display = isRouteVisible ? "block" : "none";
+
       map!.getCanvas().parentElement?.appendChild(tooltip);
 
       marker.getElement().addEventListener("mousemove", (event) => {
@@ -193,7 +203,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
       trainMarkers.current.set(trainId, { 
         marker, 
         route: routeId, 
-        visible: activeFilters[routeId] ?? true, 
+        visible: isRouteVisible, 
         tooltip 
       });
     }
