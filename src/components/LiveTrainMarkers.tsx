@@ -119,7 +119,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     trainMarkers.current.clear();
   };
 
-  const updateTrainMarker = useCallback((train: TrainData) => {
+  const updateTrainMarker = useCallback((train: TrainData, currentFilters: { [key: string]: boolean }) => {
     const trainId = train.id;
     const routeId = train.relationships.route.data.id;
     const { 
@@ -192,7 +192,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         .addTo(map!);
 
       // Use stored visibility state for new markers
-      const isVisible = visibilityStates.current.get(routeId) ?? (activeFilters[routeId] ?? true);
+      const isVisible = visibilityStates.current.get(routeId) ?? (currentFilters[routeId] ?? true);
       marker.getElement().style.display = isVisible ? "block" : "none";
 
       map!.getCanvas().parentElement?.appendChild(tooltip);
@@ -243,7 +243,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
                     const jsonData: TrainData[] = JSON.parse(event.data);
                     trainMarkers.current.clear();
                     if (Array.isArray(jsonData)) {
-                        jsonData.forEach(updateTrainMarker);
+                        jsonData.forEach(train => updateTrainMarker(train, activeFilters));
                     }
                 } catch (e) {
                     console.error('Error parsing reset data:', e);
@@ -254,7 +254,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
                 try {
                     const jsonData: TrainData = JSON.parse(event.data);
                     if (jsonData.id) {
-                        updateTrainMarker(jsonData);
+                        updateTrainMarker(jsonData, activeFilters);
                     }
                 } catch (e) {
                     console.error('Error parsing update data:', e);
