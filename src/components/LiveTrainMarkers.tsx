@@ -78,6 +78,14 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
   // Add a ref to store visibility states
   const visibilityStates = useRef(new Map<string, boolean>());
 
+  // Add a ref to store latest filters
+  const latestFilters = useRef(activeFilters);
+
+  // Keep latestFilters in sync with activeFilters
+  useEffect(() => {
+    latestFilters.current = activeFilters;
+  }, [activeFilters]);
+
   const fetchStops = async () => {
     // Only fetch if global cache is empty
     if (globalStopCache.size === 0) {
@@ -243,7 +251,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
                     const jsonData: TrainData[] = JSON.parse(event.data);
                     trainMarkers.current.clear();
                     if (Array.isArray(jsonData)) {
-                        jsonData.forEach(train => updateTrainMarker(train, activeFilters));
+                        jsonData.forEach(train => updateTrainMarker(train, latestFilters.current));
                     }
                 } catch (e) {
                     console.error('Error parsing reset data:', e);
@@ -254,7 +262,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
                 try {
                     const jsonData: TrainData = JSON.parse(event.data);
                     if (jsonData.id) {
-                        updateTrainMarker(jsonData, activeFilters);
+                        updateTrainMarker(jsonData, latestFilters.current);
                     }
                 } catch (e) {
                     console.error('Error parsing update data:', e);
