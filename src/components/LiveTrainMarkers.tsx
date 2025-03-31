@@ -75,6 +75,9 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     >()
   );
 
+  // Add a ref to store visibility states
+  const visibilityStates = useRef(new Map<string, boolean>());
+
   const fetchStops = async () => {
     // Only fetch if global cache is empty
     if (globalStopCache.size === 0) {
@@ -104,6 +107,11 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
   }
 
   const clearAllMarkers = () => {
+    // Store visibility states before clearing
+    trainMarkers.current.forEach(({ route, visible }) => {
+      visibilityStates.current.set(route, visible);
+    });
+
     trainMarkers.current.forEach(({ marker, tooltip }) => {
       marker.remove();
       tooltip.remove();
@@ -114,10 +122,6 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
   const updateTrainMarker = (train: TrainData) => {
     const trainId = train.id;
     const routeId = train.relationships.route.data.id;
-    
-    // Check if this route should be visible based on active filters
-    const isRouteVisible = activeFilters[routeId] ?? true;
-    
     const { 
       latitude, longitude, label, bearing, carriages, updated_at,
       direction_id, current_status
@@ -148,13 +152,10 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
          Last Ping: ${lastPingAge}s ago`;
 
     if (trainMarkers.current.has(trainId)) {
-      // Update existing marker
       const existingMarker = trainMarkers.current.get(trainId)!;
       existingMarker.marker.setLngLat([longitude, latitude]).setRotation(bearing);
       existingMarker.tooltip.innerText = trainDetails;
-      // Update visibility based on active filters
-      existingMarker.marker.getElement().style.display = isRouteVisible ? "block" : "none";
-      existingMarker.visible = isRouteVisible;
+      existingMarker.marker.getElement().style.display = (visibilityStates.current.get(routeId) ?? (activeFilters[routeId] ?? true)) ? "block" : "none";
     } else {
       // Create new marker
       const customMarkerElement = document.createElement("div");
@@ -190,8 +191,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
         .setRotation(bearing)
         .addTo(map!);
 
-      // Set initial visibility based on active filters
-      marker.getElement().style.display = isRouteVisible ? "block" : "none";
+      marker.getElement().style.display = (visibilityStates.current.get(routeId) ?? (activeFilters[routeId] ?? true)) ? "block" : "none";
 
       map!.getCanvas().parentElement?.appendChild(tooltip);
 
@@ -203,7 +203,7 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
       trainMarkers.current.set(trainId, { 
         marker, 
         route: routeId, 
-        visible: isRouteVisible, 
+        visible: (visibilityStates.current.get(routeId) ?? (activeFilters[routeId] ?? true)), 
         tooltip 
       });
     }
@@ -290,17 +290,18 @@ export default function LiveTrainMarkers({ map, activeFilters }: LiveTrainMarker
     };
 }, [map]);
 
+  // Update visibility states when filters change
   useEffect(() => {
     if (!map) return;
 
     trainMarkers.current.forEach(({ marker, route, tooltip }, trainId) => {
       const isRouteVisible = activeFilters[route] ?? true;
-      const wasPreviouslyHidden = trainMarkers.current.get(trainId)?.visible === false;
+      visibilityStates.current.set(route, isRouteVisible);
 
-      if (isRouteVisible && wasPreviouslyHidden) {
+      if (isRouteVisible) {
         marker.getElement().style.display = "block";
         trainMarkers.current.set(trainId, { marker, route, visible: true, tooltip });
-      } else if (!isRouteVisible) {
+      } else {
         marker.getElement().style.display = "none";
         trainMarkers.current.set(trainId, { marker, route, visible: false, tooltip });
       }
