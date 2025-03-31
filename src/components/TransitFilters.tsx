@@ -89,7 +89,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
         setHovered(null);
       }, 50);
     }
-  }, [hovered]);
+  }, [hovered, isInsideExpanded]);
 
   return (
     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 p-3 bg-black rounded-lg shadow-md">
