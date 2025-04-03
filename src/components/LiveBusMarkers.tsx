@@ -18,7 +18,7 @@ interface BusAttributes {
   label: string;
   bearing: number;
   updated_at: string;
-  direction_id?: number;
+  // direction_id?: number;
   destination?: string;
   current_status?: string;
 }
@@ -176,7 +176,8 @@ export default function LiveBusMarkers({ map, activeFilters }: LiveBusMarkersPro
     const routeId = bus.relationships.route.data.id;
     const { 
       latitude, longitude, label, bearing, updated_at,
-      direction_id, current_status
+      // direction_id, current_status
+      current_status
     } = bus.attributes;
 
     if (!latitude || !longitude) return;
