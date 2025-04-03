@@ -9,6 +9,7 @@ import BusPaths from "./BusPaths";
 import TransitFilters from "./TransitFilters";
 import LiveTrainMarkers from "./LiveTrainMarkers";
 import ZoomControls from "./ZoomControls";
+import LiveBusMarkers from './LiveBusMarkers';
 
 const DEFAULT_CENTER: [number, number] = [-71.0589, 42.3601];
 const MASSACHUSETTS_BOUNDS: [[number, number], [number, number]] = [
@@ -105,7 +106,18 @@ const Map = () => {
             onRoutesLoaded={() => setIsRoutesLoaded(true)}
           />
           {/* <VehicleMarkers map={mapInstance.current} /> ✅ Overlay Vehicle Tracking */}
-          { isRoutesLoaded && < LiveTrainMarkers map={mapInstance.current} activeFilters={activeFilters}/> }
+          { isRoutesLoaded && (
+            <>
+              <LiveTrainMarkers 
+                map={mapInstance.current} 
+                activeFilters={activeFilters}
+              />
+              <LiveBusMarkers 
+                map={mapInstance.current} 
+                activeFilters={activeFilters}
+              />
+            </>
+          )}
         </>
       )}
 
