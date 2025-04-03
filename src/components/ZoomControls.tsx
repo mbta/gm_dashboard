@@ -45,13 +45,13 @@ export default function ZoomControls({ map }: ZoomControlsProps) {
   };
 
   return (
-    <div
-      className="absolute top-72 right-4 z-20 flex flex-col items-center gap-2 p-3 bg-black text-white rounded-lg shadow-md"
+    <div 
+      className="flex flex-col items-center gap-2 p-3 relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {isHovered && (
-        <div className="absolute top-0 -translate-y-full mb-1 text-xs bg-gray-800 text-white px-2 py-1 rounded">
+        <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 text-xs bg-gray-800 text-white px-2 py-1 rounded whitespace-nowrap">
           Zoom: {zoomLevel.toFixed(1)}
         </div>
       )}

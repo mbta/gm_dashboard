@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import ResetButton from "./ResetButton";
 import TrainPaths from "./TrainPaths";
+import BusPaths from "./BusPaths";
 import TransitFilters from "./TransitFilters";
 import LiveTrainMarkers from "./LiveTrainMarkers";
 import ZoomControls from "./ZoomControls";
@@ -22,7 +23,8 @@ const MBTA_LINES = {
     "CR-Fairmount", "CR-Fitchburg", "CR-Worcester", "CR-Franklin", "CR-Greenbush",
     "CR-Haverhill", "CR-Kingston", "CR-Lowell", "CR-Middleborough", "CR-Needham",
     "CR-Newburyport", "CR-Providence", "CR-Foxboro", "CR-NewBedford"
-  ]
+  ],
+  bus: ["Yellow", "Silver"]
 };
 
 const Map = () => {
@@ -34,8 +36,18 @@ const Map = () => {
   // ✅ Track state for individual lines and categories
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: boolean }>(() => {
     const initialState: { [key: string]: boolean } = {};
-    Object.values(MBTA_LINES).flat().forEach(line => (initialState[line] = true));
-    Object.keys(MBTA_LINES).forEach(category => (initialState[category] = true));
+    
+    // Set all train lines to visible by default
+    Object.values(MBTA_LINES).flat().forEach(line => {
+      // Set bus routes to false, all others to true
+      initialState[line] = !["Yellow", "Silver"].includes(line);
+    });
+    
+    // Set all categories to visible except bus
+    Object.keys(MBTA_LINES).forEach(category => {
+      initialState[category] = category !== "bus";
+    });
+    
     return initialState;
   });
 
@@ -45,6 +57,8 @@ const Map = () => {
     mapInstance.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "https://api.maptiler.com/maps/6352c4b7-9417-48fc-b37e-a8e9154e1559/style.json?key=uAsV5el3HdBMKRqcz1p8",
+      // style: "https://api.maptiler.com/maps/0195fc1d-5861-74ea-ab52-9093f35756b9/style.json?key=uAsV5el3HdBMKRqcz1p8",
+      // style: "https://api.maptiler.com/maps/0195fc3a-630b-7113-9e34-fe85e7c483d6/style.json?key=uAsV5el3HdBMKRqcz1p8",
       center: DEFAULT_CENTER,
       zoom: 11,
     });
@@ -80,24 +94,42 @@ const Map = () => {
       
       {mapReady && (
         <>
-          <TrainPaths map={mapInstance.current} activeFilters={activeFilters} onRoutesLoaded={() => setIsRoutesLoaded(true)}/>
+          <TrainPaths 
+            map={mapInstance.current} 
+            activeFilters={activeFilters} 
+            onRoutesLoaded={() => setIsRoutesLoaded(true)}
+          />
+          <BusPaths 
+            map={mapInstance.current} 
+            activeFilters={activeFilters} 
+            onRoutesLoaded={() => setIsRoutesLoaded(true)}
+          />
           {/* <VehicleMarkers map={mapInstance.current} /> ✅ Overlay Vehicle Tracking */}
           { isRoutesLoaded && < LiveTrainMarkers map={mapInstance.current} activeFilters={activeFilters}/> }
         </>
       )}
-      <TransitFilters 
-        activeFilters={activeFilters} 
-        toggleCategory={toggleCategory} 
-        toggleLine={toggleLine} 
-        showAll={() => setActiveFilters(prev => {
-          const newFilters = { ...prev };
-          Object.keys(newFilters).forEach(key => newFilters[key] = true);
-          return newFilters;
-        })}
-      />
 
-      <ResetButton mapInstance={mapInstance.current} />
-      <ZoomControls map={mapInstance.current} />
+      {/* Controls container with gaps */}
+      <div className="absolute top-4 right-4 flex flex-col gap-4">
+        <div className="bg-black rounded-lg shadow-md">
+          <TransitFilters 
+            activeFilters={activeFilters} 
+            toggleCategory={toggleCategory} 
+            toggleLine={toggleLine} 
+            showAll={() => setActiveFilters(prev => {
+              const newFilters = { ...prev };
+              Object.keys(newFilters).forEach(key => newFilters[key] = true);
+              return newFilters;
+            })}
+          />
+        </div>
+        <div className="bg-black rounded-lg shadow-md">
+          <ResetButton mapInstance={mapInstance.current} />
+        </div>
+        <div className="bg-black rounded-lg shadow-md">
+          <ZoomControls map={mapInstance.current} />
+        </div>
+      </div>
     </div>
   );
 };

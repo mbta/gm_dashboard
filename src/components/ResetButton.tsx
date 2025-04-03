@@ -20,7 +20,7 @@ export default function ResetButton({ mapInstance } : ResetButtonProps) {
 
   return (
     <Button
-      className="absolute top-52 right-4 z-10 bg-black text-white p-2 rounded-full shadow-md hover:bg-gray-800 transition w-14 h-14"
+      className="text-white p-2 hover:bg-gray-800 transition w-14 h-14"
       onClick={resetMap}
       size="icon"
     >

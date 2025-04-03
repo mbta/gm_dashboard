@@ -14,10 +14,14 @@ import mattapanIcon from "../icons/icon-mattapan-line-default.svg";
 import redLineIcon from "../icons/icon-red-line-default.svg";
 import orangeLineIcon from "../icons/icon-orange-line-default.svg";
 import blueLineIcon from "../icons/icon-blue-line-default.svg";
+import busIcon from '../icons/icon-bus-circle-bw-small.svg';
+import silverLineIcon from '../icons/icon-silver-line-small.svg';
+import yellowBusIcon from '../icons/icon-mode-bus-default.svg';
+
 
 interface TransitFiltersProps {
   activeFilters: { [key: string]: boolean };
-  toggleCategory: (category: 'subway' | 'lightrail' | 'commuter') => void;
+  toggleCategory: (category: 'subway' | 'lightrail' | 'commuter' | 'bus') => void;
   toggleLine: (line: string) => void;
   showAll: () => void;
 }
@@ -47,6 +51,12 @@ function lineToIcon(line: string) {
   if (line === "Blue") {
     return blueLineIcon;
   }
+  if (line === "Silver") {
+    return silverLineIcon;
+  }
+  if (line === "Yellow") {
+    return yellowBusIcon;
+  }
 }
 
 export default function TransitFilters({ activeFilters, toggleCategory, toggleLine, showAll }: TransitFiltersProps) {
@@ -60,6 +70,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
   const COMMUTER_LINES = ['CR-Fairmount', 'CR-Fitchburg', 'CR-Worcester', 'CR-Franklin', 'CR-Greenbush',
   'CR-Haverhill', 'CR-Kingston', 'CR-Lowell', 'CR-Middleborough', 'CR-Needham',
   'CR-Newburyport', 'CR-Providence', 'CR-Foxboro'];
+  const BUS_LINES = ["Silver", "Yellow"];
 
   // Function to check if all lines in a category are OFF
   const isCategoryOff = (lines: string[]) => lines.every(line => !activeFilters[line]);
@@ -92,7 +103,7 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
   }, [hovered, isInsideExpanded]);
 
   return (
-    <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 p-3 bg-black rounded-lg shadow-md">
+    <div className="flex flex-col gap-2 p-3">
       
       {/* Subway Icon with O, R, B */}
       <div
@@ -222,6 +233,52 @@ export default function TransitFilters({ activeFilters, toggleCategory, toggleLi
                 height={40}
             />
         </Button>
+      </div>
+
+      {/* Bus Icon with Silver, Yellow */}
+      <div
+        className={`relative flex items-center transition-opacity duration-300 ${
+          hovered && hovered !== "bus" ? "opacity-50" : "opacity-100"
+        }`}
+        onMouseEnter={() => handleMouseEnter("bus")}
+        onMouseLeave={() => handleMouseLeave()}
+      >
+        {hovered === "bus" && (
+          <div
+            className="absolute right-14 flex gap-2 p-2 bg-gray-800 rounded-lg shadow-lg transition-all duration-300"
+            onMouseEnter={() => handleMouseEnter("bus")}
+            onMouseLeave={() => handleMouseLeave()}
+          >
+            {BUS_LINES.map((line) => (
+              <Image
+                key={line}
+                src={lineToIcon(line)}
+                alt={`${line} line icon`}
+                className={`h-8 w-8 flex transition-all duration-300 cursor-pointer max-w-[40px] max-h-[40px] object-contain ${
+                  !activeFilters[line] ? "opacity-50" : "opacity-100"
+                }`}
+                onClick={() => toggleLine(line)}
+                width={40}
+                height={40}
+              />
+            ))}
+          </div>
+        )}
+        <Button
+            className={`relative h-8 w-8 flex items-center justify-center transition-transform duration-300 ${
+                hovered === "bus" ? "scale-125" : "scale-100"
+              } ${isCategoryOff(BUS_LINES) ? "opacity-50" : "opacity-100"}`}
+            onClick={() => toggleCategory("bus")}
+            >
+            <Image 
+                src={busIcon}
+                alt="Bus"
+                className="w-8 h-8 max-w-[40px] max-h-[40px] object-contain"
+                width={40}
+                height={40}
+            />
+        </Button>
+
       </div>
 
       {/* Show All Button with Tooltip */}
