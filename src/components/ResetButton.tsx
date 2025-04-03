@@ -18,7 +18,7 @@ export default function ResetButton({ mapInstance } : ResetButtonProps) {
     
     mapInstance.flyTo({
       center: DEFAULT_CENTER,
-      zoom: 11,
+      zoom: DEFAULT_ZOOM,
       bearing: 0,
       pitch: 0
     });
