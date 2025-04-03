@@ -77,7 +77,6 @@ interface ApiResponse {
 
 export default function BusPaths({ map, activeFilters, onRoutesLoaded }: BusPathsProps) {
   const [routesLoaded, setRoutesLoaded] = useState(false);
-  const [routeIds, setRouteIds] = useState<string[]>([]);
   const [frequentRoutes, setFrequentRoutes] = useState<Route[]>([]);
 
   const fetchAllRoutes = useCallback(async () => {
@@ -93,8 +92,6 @@ export default function BusPaths({ map, activeFilters, onRoutesLoaded }: BusPath
       }
 
       const data: ApiResponse = await response.json();
-      const apiRouteIds = data.data.map(route => route.id);
-      setRouteIds(apiRouteIds);
 
       // Create maps for efficient lookups
       const shapesMap = new Map<string, Shape>();
