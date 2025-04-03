@@ -13,15 +13,21 @@ interface ResetButtonProps {
 }
 
 export default function ResetButton({ mapInstance } : ResetButtonProps) {
-  const resetMap = () => {
-    if (!mapInstance) return; 
-    mapInstance.flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM });
+  const handleReset = () => {
+    if (!mapInstance) return;
+    
+    mapInstance.flyTo({
+      center: DEFAULT_CENTER,
+      zoom: 11,
+      bearing: 0,
+      pitch: 0
+    });
   };
 
   return (
     <Button
       className="text-white p-2 hover:bg-gray-800 transition w-14 h-14"
-      onClick={resetMap}
+      onClick={handleReset}
       size="icon"
     >
       <LocateFixed style={{ width: "32px", height: "32px"}} />
